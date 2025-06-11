@@ -6,58 +6,7 @@ from matplotlib.colors import Normalize
 
 home = os.path.expanduser("~") # os independent home
 
-# local load of additional modules.
-prefix = ''
-sys.path.append(prefix + '../deepEMdeepML2/deep-borehole-inverse-problem/KERNEL')
-sys.path.append(prefix + '../deepEMdeepML2/deep-borehole-inverse-problem/USER_SERGEY')
-sys.path.append(prefix + '../gan-geosteering')
-
-from vector_to_image import GanEvaluator
-
-
-# def dynamic_programming_old(weights, start_point):
-#     n, m = weights.shape
-#     dp = np.full((n, m), -np.inf)  # Initialize with -inf for unvisited cells
-#     path = np.zeros((n, m, 2), dtype=int)  # Store (prev_row, prev_col) for backtracking
-#
-#     # Initialize the start point
-#     start_row, start_col = start_point
-#     dp[start_row, start_col] = weights[start_row, start_col]
-#
-#     # Fill the DP table, considering horizontal and limited vertical moves from the start point
-#     for j in range(start_col + 1, m):
-#         for i in range(n):
-#             # From directly left (i, j-1)
-#             if j > start_col and dp[i, j - 1] + weights[i, j] > dp[i, j]:
-#                 dp[i, j] = dp[i, j - 1] + weights[i, j]
-#                 path[i, j] = (i, j - 1)
-#
-#             # From above (i-1, j) if not in the first row
-#             if i > 0 and dp[i - 1, j] + weights[i, j] > dp[i, j]:
-#                 dp[i, j] = dp[i - 1, j] + weights[i, j]
-#                 path[i, j] = (i - 1, j)
-#
-#             # From below (i+1, j) if not in the last row
-#             if i < n - 1 and dp[i + 1, j] + weights[i, j] > dp[i, j]:
-#                 dp[i, j] = dp[i + 1, j] + weights[i, j]
-#                 path[i, j] = (i + 1, j)
-#
-#     # Identify the optimal endpoint in the last column
-#     end_row = np.argmax(dp[:, -1])
-#     max_value = dp[end_row, -1]
-#
-#     # Backtrack to find the optimal path starting from the best endpoint
-#     optimal_path = []
-#     current = (end_row, m - 1)
-#     while current[1] > start_col:  # Continue until reaching the starting column
-#         optimal_path.append(current)
-#         current = tuple(path[current])
-#
-#     optimal_path.append(start_point)  # Add the start of the path
-#     optimal_path.reverse()  # Reverse the path to start from the optimal starting point
-#
-#     return dp, max_value, optimal_path
-
+from NeuralSim import GanEvaluator
 
 
 def dynamic_programming1(weights, start_point, discount_factor=1.0,
