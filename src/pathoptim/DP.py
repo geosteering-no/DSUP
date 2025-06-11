@@ -3,10 +3,9 @@ import os
 import sys
 import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
-
-home = os.path.expanduser("~") # os independent home
-
-from NeuralSim import GanEvaluator
+import torch
+from NeuralSim.vector_to_image import GanEvaluator
+from sympy.physics.quantum.gate import normalized
 
 
 def dynamic_programming1(weights, start_point, discount_factor=1.0,
@@ -95,15 +94,17 @@ def dynamic_programming1(weights, start_point, discount_factor=1.0,
     return dp, dp[start_row, start_col], optimal_path
 
 
-# gan_file_name = os.path.join(home,'OneDrive/DISTINGUISH/ECMOR_study/gan-geosteering/f2020_rms_5_10_50_60/netG_epoch_4662.pth')
-gan_file_name = '../gan-geosteering/f2020_rms_5_10_50_60/netG_epoch_4662.pth'
-
 gan_vec_size = 60
-gan_evaluator = GanEvaluator(gan_file_name, gan_vec_size)
+load_file_name = "https://gitlab.norceresearch.no/saly/image_to_log_weights/-/raw/master/gan/netG_epoch_15000.pth"
+gan_evaluator = GanEvaluator(load_file_name, gan_vec_size)
 
+def earth_model_from_vector(gan_evaluator, single_realization, ):
+    earth_model = gan_evaluator.eval(input_vec=single_realization).squeeze(0).transpose(-2,-1)
+    rounded_model = np.round((earth_model[0:3, :, :] + 1.) / 2.)
+    return rounded_model
 
 def evaluate_earth_model(gan_evaluator, single_realization):
-    earth_model = gan_evaluator.eval(input_vec=single_realization)
+    earth_model = gan_evaluator.eval(input_latent_ensemble=single_realization).squeeze(0).transpose(-2,-1)
     rounded_model = np.where(earth_model >= 0, 1, 0)
     value_for_channel = {
     1: 1,   # Weight for channel body
@@ -157,7 +158,8 @@ def process_prior_and_plot_results(single_realization, start_point, plot_path=Fa
         di_vector = [0, -1, 1]
     # todo implement the discount factor
     normalized_rgb = evaluate_earth_model(gan_evaluator, single_realization)
-    weighted_image = create_weighted_image(normalized_rgb)
+    weighted_image = normalized_rgb #
+    #weighted_image = create_weighted_image(normalized_rgb)
 
     dp_matrix, max_path_value, optimal_path = perform_dynamic_programming(weighted_image, start_point,
                                                                           di_vector=di_vector,
@@ -248,7 +250,9 @@ def calculate_body_sizes(single_earth_model_2d, value_for_channel=None):
 
 # Example of calling the renamed function with the prior data
 if __name__ == '__main__':
-    prior_path = '/home/AD.NORCERESEARCH.NO/krfo/OneDrive/DISTINGUISH/ECMOR_study/RunFolder/debug_analysis_step_1.npz'
-    prior = np.load(prior_path, allow_pickle=True)['state'][()]['m']
-    start_point = (0, 0)
-    process_prior_and_plot_results(prior[:,50], start_point, plot_path=True)
+    prior_np= np.random.normal(size=60)
+    # make prior_np to tensor
+    prior_tensor = torch.tensor(prior_np, dtype=torch.float32)
+
+    start_point = (31, 0)
+    process_prior_and_plot_results(prior_tensor.unsqueeze(0), start_point, plot_path=True)
