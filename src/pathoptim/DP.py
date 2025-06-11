@@ -98,13 +98,13 @@ gan_vec_size = 60
 load_file_name = "https://gitlab.norceresearch.no/saly/image_to_log_weights/-/raw/master/gan/netG_epoch_15000.pth"
 gan_evaluator = GanEvaluator(load_file_name, gan_vec_size)
 
-def earth_model_from_vector(gan_evaluator, single_realization, ):
-    earth_model = gan_evaluator.eval(input_vec=single_realization).squeeze(0).transpose(-2,-1)
+def earth_model_from_vector(gan_evaluator, single_realization):
+    earth_model = gan_evaluator.eval(input_latent_ensemble=single_realization.unsqueeze(0)).squeeze(0).transpose(-2,-1)
     rounded_model = np.round((earth_model[0:3, :, :] + 1.) / 2.)
     return rounded_model
 
 def evaluate_earth_model(gan_evaluator, single_realization):
-    earth_model = gan_evaluator.eval(input_latent_ensemble=single_realization).squeeze(0).transpose(-2,-1)
+    earth_model = gan_evaluator.eval(input_latent_ensemble=single_realization.unsqueeze(0)).squeeze(0).transpose(-2,-1)
     rounded_model = np.where(earth_model >= 0, 1, 0)
     value_for_channel = {
     1: 1,   # Weight for channel body
