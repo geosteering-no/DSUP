@@ -1,10 +1,10 @@
 '''
-This is the main file for the path-optim package. Given an ensemble of realizations of the latent vector, the pathfinder
+This is the main file for the pathoptim package. Given an ensemble of realizations of the latent vector, the pathfinder
 class will make realizations of the earthmodel by running the GAN and use there realizations to find the optimal path
 for the well.
 '''
 
-from DP import process_prior_and_plot_results
+from .DP import process_prior_and_plot_results
 from tqdm import tqdm
 import multiprocessing
 import numpy as np
