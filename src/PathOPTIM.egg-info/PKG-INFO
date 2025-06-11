@@ -1,0 +1,22 @@
+Metadata-Version: 2.4
+Name: PathOPTIM
+Version: 1.0
+Summary: PATH optimization for geosteering in the DISTINGUISH WF
+Author-email: Kristian Fossum <krfo@norceresearch.no>
+Requires-Python: >=3.8
+Description-Content-Type: text/markdown
+Requires-Dist: numpy
+Requires-Dist: torch
+Requires-Dist: torchvision
+Requires-Dist: seaborn
+
+Wrapper for the path-optimization script
+
+Install in your virtual environment by:
+
+```
+    pip install -e .
+```
+
+The optimizer then available through:
+from pathOPTIM import pathfinder

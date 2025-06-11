@@ -1,0 +1,14 @@
+[project]
+name = "PathOPTIM"
+version = "1.0"
+authors = [
+  { name="Kristian Fossum", email="krfo@norceresearch.no" },
+]
+description = "PATH optimization for geosteering in the DISTINGUISH WF"
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+  "numpy",
+  "torch",
+  "torchvision", 
+  "seaborn"]
