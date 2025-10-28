@@ -94,9 +94,7 @@ def dynamic_programming1(weights, start_point, discount_factor=1.0,
     return dp, dp[start_row, start_col], optimal_path
 
 
-gan_vec_size = 60
-load_file_name = "https://gitlab.norceresearch.no/saly/image_to_log_weights/-/raw/master/gan/netG_epoch_15000.pth"
-gan_evaluator = GanEvaluator(load_file_name, gan_vec_size)
+
 
 def earth_model_from_vector(gan_evaluator, single_realization):
     # TODO check if the transposed is ever used
@@ -253,7 +251,15 @@ def calculate_body_sizes(single_earth_model_2d, value_for_channel=None):
 
 # Example of calling the renamed function with the prior data
 if __name__ == '__main__':
-    prior_np= np.random.normal(size=60)
+
+    # lines bellow was moved from the global scope
+    # todo check for consequences
+    gan_vec_size = 60
+    load_file_name = "https://gitlab.norceresearch.no/saly/image_to_log_weights/-/raw/master/gan/netG_epoch_15000.pth"
+    gan_evaluator = GanEvaluator(load_file_name, gan_vec_size)
+
+    prior_np= np.random.normal(size=gan_vec_size)
+
     # make prior_np to tensor
     prior_tensor = torch.tensor(prior_np, dtype=torch.float32)
 
