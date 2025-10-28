@@ -145,7 +145,11 @@ def plot_results(weighted_image, optimal_path):
     plt.show()
 
 
-def process_prior_and_plot_results(single_realization, start_point, plot_path=False, discount_factor=1.0,
+def process_prior_and_plot_results(single_realization,
+                                   start_point,
+                                   gan_evaluator,
+                                   plot_path=False,
+                                   discount_factor=1.0,
                                    di_vector=None,
                                    cost_vector=None):
     """
@@ -256,7 +260,7 @@ if __name__ == '__main__':
     # todo check for consequences
     gan_vec_size = 60
     load_file_name = "https://gitlab.norceresearch.no/saly/image_to_log_weights/-/raw/master/gan/netG_epoch_15000.pth"
-    gan_evaluator = GanEvaluator(load_file_name, gan_vec_size)
+    gan_evaluatorrr = GanEvaluator(load_file_name, gan_vec_size)
 
     prior_np= np.random.normal(size=gan_vec_size)
 
@@ -264,4 +268,4 @@ if __name__ == '__main__':
     prior_tensor = torch.tensor(prior_np, dtype=torch.float32)
 
     start_point = (31, 0)
-    process_prior_and_plot_results(prior_tensor.unsqueeze(0), start_point, plot_path=True)
+    process_prior_and_plot_results(prior_tensor.unsqueeze(0), start_point, gan_evaluator=gan_evaluatorrr, plot_path=True)

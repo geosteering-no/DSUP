@@ -45,7 +45,14 @@ class pathfinder():
         cost_vector = np.array(np.sqrt(np.power(10.0, 2) + np.power(dy_vector * 0.5, 2))) * cost_mult
         return cost_vector
 
-    def run(self, state, start_point, discount_for_remainder=1.0, dy_vector=None, cost_vector=None, cost_mult=0.02):
+    def run(self,
+            state,
+            start_point,
+            gan_evaluator,
+            discount_for_remainder=1.0,
+            dy_vector=None,
+            cost_vector=None,
+            cost_mult=0.02):
         if dy_vector is None:
             dy_vector = np.array([0, -1, 1])
         if cost_vector is None:
@@ -66,8 +73,12 @@ class pathfinder():
         for i in range(ne):
 
             # todo send the di vector there
-            dp_matrix_i, max_path_value, weighted_image_i, optimal_path = (
-                process_prior_and_plot_results(state[:, i], start_point, di_vector=dy_vector, cost_vector=cost_vector))
+            dp_matrix_i, max_path_value, weighted_image_i, optimal_path = \
+                process_prior_and_plot_results(state[:, i],
+                                               start_point,
+                                               gan_evaluator,
+                                               di_vector=dy_vector,
+                                               cost_vector=cost_vector)
 
             optimal_paths.append(optimal_path)
             max_path_values.append(max_path_value)
