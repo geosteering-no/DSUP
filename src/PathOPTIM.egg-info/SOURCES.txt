@@ -1,9 +1,0 @@
-README.md
-pyproject.toml
-src/PathOPTIM.egg-info/PKG-INFO
-src/PathOPTIM.egg-info/SOURCES.txt
-src/PathOPTIM.egg-info/dependency_links.txt
-src/PathOPTIM.egg-info/requires.txt
-src/PathOPTIM.egg-info/top_level.txt
-src/path-optim/DP.py
-src/path-optim/pathOPTIM.py
