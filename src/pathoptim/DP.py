@@ -95,16 +95,19 @@ def dynamic_programming1(weights, start_point, discount_factor=1.0,
 
 
 
-
+# TODO remove model evaluation from the DP-optimization module
 def earth_model_from_vector(gan_evaluator, single_realization):
-    # TODO check if the transposed is ever used
-    earth_model = gan_evaluator.eval(input_latent_ensemble=single_realization.unsqueeze(0)).squeeze(0).transpose(-2,-1)
+    earth_model = gan_evaluator.eval(input_latent_ensemble=single_realization.unsqueeze(0)).squeeze(0)
+    # TODO we need to pass a flag if a model needs to be transposed before the optimization
+    # .transpose(-2, -1)
     earth_model_np = earth_model.cpu().numpy()
     rounded_model = np.round((earth_model_np[0:3, :, :] + 1.) / 2.)
     return rounded_model
 
 def evaluate_earth_model(gan_evaluator, single_realization):
-    earth_model_torch = gan_evaluator.eval(input_latent_ensemble=single_realization.unsqueeze(0)).squeeze(0).transpose(-2,-1)
+    earth_model_torch = gan_evaluator.eval(input_latent_ensemble=single_realization.unsqueeze(0)).squeeze(0)
+    # TODO we need to pass a flag if a model needs to be transposed before the optimization
+    # .transpose(-2,-1)
     earth_model_np = earth_model_torch.cpu().numpy()
     rounded_model = np.where(earth_model_np >= 0, 1, 0)
     value_for_channel = {
