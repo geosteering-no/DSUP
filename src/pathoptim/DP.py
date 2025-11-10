@@ -5,10 +5,10 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 import torch
 from NeuralSim.vector_to_image import GanEvaluator
-from sympy.physics.quantum.gate import normalized
 
 
-def dynamic_programming1(weights, start_point, discount_factor=1.0,
+def dynamic_programming1(weights, start_point,
+                         discount_factor=1.0,
                          di_vector=None,
                          cost_vector=None):
     """
@@ -104,28 +104,61 @@ def earth_model_from_vector(gan_evaluator, single_realization):
     rounded_model = np.round((earth_model_np[0:3, :, :] + 1.) / 2.)
     return rounded_model
 
-def evaluate_earth_model(gan_evaluator, single_realization):
-    earth_model_torch = gan_evaluator.eval(input_latent_ensemble=single_realization.unsqueeze(0)).squeeze(0)
-    # TODO we need to pass a flag if a model needs to be transposed before the optimization
-    # .transpose(-2,-1)
+
+
+# todo the GAN-mapping functgionality should be outside
+def evaluate_earth_model(gan_evaluator=None, single_realization=None):
+    """
+    Marked for deprication
+    :param gan_evaluator: provide gan evalutor if you send the realization vector
+    :param single_realization: a realization vector or a facies map
+    :return:
+    """
+    if gan_evaluator is not None:
+        earth_model_torch = gan_evaluator.eval(input_latent_ensemble=single_realization.unsqueeze(0)).squeeze(0)
+        # TODO we need to pass a flag if a model needs to be transposed before the optimization
+        # .transpose(-2,-1)
+    else:
+        earth_model_torch = single_realization
     earth_model_np = earth_model_torch.cpu().numpy()
     rounded_model = np.where(earth_model_np >= 0, 1, 0)
     value_for_channel = {
-    1: 1,   # Weight for channel body
-    2: 0.5  # Weight for crevasse
+        1: value_for_facies[1],  # Weight for channel body
+        2: value_for_facies[2]  # Weight for crevasse
     }
 
     result_matrix = calculate_body_sizes(rounded_model, value_for_channel)
 
     return result_matrix
 
+value_for_facies = [0., 1., 0.5, 0., 0., 0.]
 
+def evaluate_earth_model_ensemble(facies_ensemble):
+    rounded_model = torch.where(
+        facies_ensemble >= 0,
+        torch.ones_like(facies_ensemble),
+        torch.zeros_like(facies_ensemble)
+    )
+    weight_tensor = torch.tensor(value_for_facies, device=facies_ensemble.device).unsqueeze(-1).unsqueeze(-1)
+    mult_result = (rounded_model * weight_tensor)
+    weighted_result=mult_result.sum(dim=1)
+    return weighted_result
+
+
+# todo: this is not very useful
 def create_weighted_image(normalized_rgb):
-    weights = np.array([-0.1, 1, 0.5])
+    """
+    To be depricated
+    :param normalized_rgb:
+    :return:
+    """
+    weights = np.array([0.0, 1.0, 0.5])
     return np.dot(normalized_rgb, weights)
 
 
-def perform_dynamic_programming(weighted_image, start_point, discount_factor=1.0,
+def perform_dynamic_programming(weighted_image,
+                                start_point,
+                                discount_factor=1.0,
                                 di_vector=None,
                                 cost_vector=None):
     if di_vector is None:
@@ -169,7 +202,8 @@ def process_prior_and_plot_results(single_realization,
     weighted_image = normalized_rgb #
     #weighted_image = create_weighted_image(normalized_rgb)
 
-    dp_matrix, max_path_value, optimal_path = perform_dynamic_programming(weighted_image, start_point,
+    dp_matrix, max_path_value, optimal_path = perform_dynamic_programming(weighted_image,
+                                                                          start_point,
                                                                           di_vector=di_vector,
                                                                           cost_vector=cost_vector)
 
