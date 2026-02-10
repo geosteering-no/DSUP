@@ -133,7 +133,30 @@ def evaluate_earth_model(gan_evaluator=None, single_realization=None):
 
 value_for_facies = [0., 1., 0.5, 0., 0., 0.]
 
-def evaluate_earth_model_ensemble(facies_ensemble):
+
+def evaluate_earth_with_geobody_sizes(facies_ensemble):
+    """
+
+    :param facies_ensemble: take torch tensor
+    :return: output torch tensor
+    """
+    values_ensemble = torch.zeros_like(facies_ensemble[:,:,:,0])
+    en_size = facies_ensemble.size(0)
+    for i in range(en_size):
+        single_realization_np = facies_ensemble[i,:,:,:].detach().cpu().numpy()
+        single_value_realization_np = calculate_body_sizes(single_realization_np)
+        values_ensemble[i,:,:] = torch.from_numpy(np_array).to(values_ensemble.device)
+    return values_ensemble
+
+def evaluate_earth_model_ensemble(facies_ensemble, compute_geobody_sizes=False):
+    """
+
+    :param facies_ensemble:
+    :param compute_geobody_sizes: The computation of geoboody sizes is different and not done in batch
+    :return:
+    """
+    if compute_geobody_sizes:
+        return evaluate_earth_with_geobody_sizes(facies_ensemble)
     rounded_model = torch.where(
         facies_ensemble >= 0,
         torch.ones_like(facies_ensemble),
@@ -242,6 +265,7 @@ def process_matrix(single_realization, optimal_path, best_point, best_paths):
     # Save the plot to a file
     plt.savefig('best.png')
     plt.close()  # Close the plot window to avoid displaying it in GUI
+
 
 def calculate_body_sizes(single_earth_model_2d, value_for_channel=None):
     if value_for_channel is None:
