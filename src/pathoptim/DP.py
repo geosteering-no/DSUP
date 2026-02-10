@@ -140,12 +140,12 @@ def evaluate_earth_with_geobody_sizes(facies_ensemble):
     :param facies_ensemble: take torch tensor
     :return: output torch tensor
     """
-    values_ensemble = torch.zeros_like(facies_ensemble[:,:,:,0])
+    values_ensemble = torch.zeros_like(facies_ensemble[:,0,:,:])
     en_size = facies_ensemble.size(0)
     for i in range(en_size):
         single_realization_np = facies_ensemble[i,:,:,:].detach().cpu().numpy()
         single_value_realization_np = calculate_body_sizes(single_realization_np)
-        values_ensemble[i,:,:] = torch.from_numpy(np_array).to(values_ensemble.device)
+        values_ensemble[i,:,:] = torch.from_numpy(single_value_realization_np).to(values_ensemble.device)
     return values_ensemble
 
 def evaluate_earth_model_ensemble(facies_ensemble, compute_geobody_sizes=False):
