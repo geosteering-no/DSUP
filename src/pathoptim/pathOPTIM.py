@@ -133,9 +133,7 @@ class pathfinder():
             next_best_position = (best_next_index, next_column)
             # list_best_pos = [next_best_position[0]] * ne
 
-        if recompute_optimal_paths_from_next:
-            if pessimistic:
-                print("Warning, recomputing of optimistic paths is irrelevant when pessimistic flag is used")
+        if not pessimistic and recompute_optimal_paths_from_next:
             optimal_paths_remainder = []
             for i in range(ne):
                 # todo recover this path from matrix for effciency
@@ -145,9 +143,9 @@ class pathfinder():
                                                                                       di_vector=dy_vector,
                                                                                       cost_vector=cost_vector)
                 optimal_paths_remainder.append(optimal_path)
+            # this returns the recomputed paths
             return next_best_position, optimal_paths_remainder
-        else:
-            return next_best_position, optimal_paths
+        return next_best_position, optimal_paths
 
 
     def run(self,
