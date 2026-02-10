@@ -122,12 +122,14 @@ class pathfinder():
                 for k, dy in enumerate(dy_vector):
                     y = cur_row + dy
                     drilling_direction_cost = cost_vector[k]
-                    # sum_for_column[y] = -drilling_direction_cost
+                    sum_for_column[y] = 0
                     # sum over ensemble members
                     for i in range(nme):
                         # we add the expected immidiate reward and the expected long-term gain times the discount
-                        sum_for_column[y] += (weighted_images[i][y][next_column]
-                                           + dp_matrices[i][y][next_column] * discount_for_remainder)
+                        sum_for_column[y] += (
+                                - drilling_direction_cost
+                                + weighted_images[i][y][next_column]
+                                + dp_matrices[i][y][next_column] * discount_for_remainder)
                 if np.max(sum_for_column) > 0:
                     best_next_index = np.argmax(sum_for_column)
 
