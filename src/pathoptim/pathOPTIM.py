@@ -111,17 +111,18 @@ class pathfinder():
             dp_matrix_shape = dp_matrices[0].shape
             nme = len(dp_matrices)
 
-
             next_column = cur_column + 1
             best_next_index = None
 
-            if next_column < dp_matrix_shape[1]:
+            # todo (bug?) check if this crashes whem next_column == dp_matrix_shape[1]-1
+            if next_column < dp_matrix_shape[1]-1:
                 # initialize all as unreachable
-                sum_for_column = np.ones(dp_matrix_shape[0]) * -1.0
+                sum_for_column = np.ones(dp_matrix_shape[0]) * -1.e9
                 # iterate over rows
                 for k, dy in enumerate(dy_vector):
                     y = cur_row + dy
                     drilling_direction_cost = cost_vector[k]
+                    # sum_for_column[y] = -drilling_direction_cost
                     # sum over ensemble members
                     for i in range(nme):
                         # we add the expected immidiate reward and the expected long-term gain times the discount
@@ -134,6 +135,8 @@ class pathfinder():
             # list_best_pos = [next_best_position[0]] * ne
 
         if not pessimistic and recompute_optimal_paths_from_next:
+            if next_best_position[0] is None:
+                return next_best_position, [[] for i in range(ne)]
             optimal_paths_remainder = []
             for i in range(ne):
                 # todo recover this path from matrix for effciency
