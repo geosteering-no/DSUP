@@ -14,17 +14,17 @@ def dynamic_programming1(weights, start_point,
     """
     :param weights:
     :param start_point:
-    :param discount_factor:
+    :param discount_factor: does not work
     :param di_vector: defines possible vertical shifts in the trajectory
     :return:
     """
     # todo implement the discount factor
     # would the discout vector work if we go forward?
 
-    if di_vector is None:
-        di_vector = [0, -1, 1]
-    if cost_vector is None:
-        cost_vector = [1., 1., 1.]
+    # if di_vector is None:
+    #     di_vector = [0, -1, 1]
+    # if cost_vector is None:
+    #     cost_vector = [1., 1., 1.]
     n, m = weights.shape
     path = np.ones((n, m, 2), dtype=int)*-1
     # path stores (next_row, next_col) or -1, -1 for backtracking
