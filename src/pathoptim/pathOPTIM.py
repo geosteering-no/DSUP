@@ -59,7 +59,8 @@ class pathfinder():
                    cost_vector=None,
                    cost_mult=0.02,
                    pessimistic=False,
-                   recompute_optimal_paths_from_next=False
+                   recompute_optimal_paths_from_next=False,
+                   greedy=False
                    ):
         """
         :param weighted_images: A torch tensor representing the ensemble of value-images of shape Ne,X,Y
@@ -70,6 +71,8 @@ class pathfinder():
         :param cost_mult:
         :return:
         """
+        if greedy and pessimistic:
+            raise InvalidInputError("greedy and pessimistic flags are not allowed at the same time")
         if dy_vector is None:
             dy_vector = np.array([0, -1, 1])
         if cost_vector is None:
@@ -95,7 +98,29 @@ class pathfinder():
 
             optimal_paths.append(optimal_path)
             next_best_position = optimal_path[1] # TODO test if it is 0 or 1
+        elif greedy:
+            next_column = cur_column + 1
+            best_next_index = None
+            nme = weighted_images.shape[0]
 
+            if next_column < weighted_images.shape[2]-1:
+                # initialize all as unreachable
+                sum_for_column = np.ones(weighted_images.shape[1]) * -1.e9
+                # iterate over rows
+                for k, dy in enumerate(dy_vector):
+                    y = cur_row + dy
+                    drilling_direction_cost = cost_vector[k]
+                    sum_for_column[y] = 0
+                    # sum over ensemble members
+                    for i in range(nme):
+                        # we add the expected immidiate reward and the expected long-term gain times the discount
+                        sum_for_column[y] += (
+                                - drilling_direction_cost
+                                + weighted_images[i][y][next_column])
+                if np.max(sum_for_column) > 0:
+                    best_next_index = np.argmax(sum_for_column)
+
+            next_best_position = (best_next_index, next_column)
         else:
             for i in range(ne):
                 weighted_image_i_np = weighted_images[i,:,:].to("cpu").numpy()
@@ -136,7 +161,7 @@ class pathfinder():
             next_best_position = (best_next_index, next_column)
             # list_best_pos = [next_best_position[0]] * ne
 
-        if not pessimistic and recompute_optimal_paths_from_next:
+        if not pessimistic and not greedy and recompute_optimal_paths_from_next:
             if next_best_position[0] is None:
                 return next_best_position, [[] for i in range(ne)]
             optimal_paths_remainder = []
