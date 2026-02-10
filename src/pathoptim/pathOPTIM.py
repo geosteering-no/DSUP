@@ -58,6 +58,7 @@ class pathfinder():
                    dy_vector=None,
                    cost_vector=None,
                    cost_mult=0.02,
+                   pessimistic=False,
                    recompute_optimal_paths_from_next=False
                    ):
         """
@@ -74,48 +75,67 @@ class pathfinder():
         if cost_vector is None:
             cost_vector = self.get_cost_vector(dy_vector, cost_mult)
 
-        optimal_paths = []
         max_path_values = []
         dp_matrices = []
         ne = weighted_images.shape[0]
 
         cur_row, cur_column = start_point
-        list_member_index = list(range(ne))
 
-        for i in range(ne):
-            weighted_image_i_np = weighted_images[i,:,:].to("cpu").numpy()
-            dp_matrix, max_path_value, optimal_path = perform_dynamic_programming(weighted_image_i_np,
+        # these things are computed with two methods
+        next_best_position = (None, None)
+        optimal_paths = []
+
+        if pessimistic:
+            # we only compute for the average image
+            weighted_image_a_np = np.average(weighted_images.to("cpu").numpy(), axis=0)
+            dp_matrix, max_path_value, optimal_path = perform_dynamic_programming(weighted_image_a_np,
                                                                                   start_point,
                                                                                   di_vector=dy_vector,
                                                                                   cost_vector=cost_vector)
 
             optimal_paths.append(optimal_path)
-            max_path_values.append(max_path_value)
-            dp_matrices.append(dp_matrix)
+            next_best_position = optimal_path[1] # TODO test if it is 0 or 1
 
-        dp_matrix_shape = dp_matrices[0].shape
+        else:
+            for i in range(ne):
+                weighted_image_i_np = weighted_images[i,:,:].to("cpu").numpy()
+                dp_matrix, max_path_value, optimal_path = perform_dynamic_programming(weighted_image_i_np,
+                                                                                      start_point,
+                                                                                      di_vector=dy_vector,
+                                                                                      cost_vector=cost_vector)
 
-        next_column = cur_column + 1
-        best_next_index = None
-        if next_column < dp_matrix_shape[1]:
-            # initialize all as unreachable
-            sum_for_column = np.ones(dp_matrix_shape[0]) * -1.0
-            # iterate over rows
-            for k, dy in enumerate(dy_vector):
-                y = cur_row + dy
-                drilling_direction_cost = cost_vector[k]
-                # sum over ensemble members
-                for i in range(ne):
-                    # we add the expected immidiate reward and the expected long-term gain times the discount
-                    sum_for_column[y] += (weighted_images[i][y][next_column]
-                                      + dp_matrices[i][y][next_column] * discount_for_remainder)
-            if np.max(sum_for_column) > 0:
-                best_next_index = np.argmax(sum_for_column)
+                optimal_paths.append(optimal_path)
+                max_path_values.append(max_path_value)
+                dp_matrices.append(dp_matrix)
 
-        next_best_position = (best_next_index, next_column)
-        # list_best_pos = [next_best_position[0]] * ne
+            dp_matrix_shape = dp_matrices[0].shape
+            nme = len(dp_matrices)
+
+
+            next_column = cur_column + 1
+            best_next_index = None
+
+            if next_column < dp_matrix_shape[1]:
+                # initialize all as unreachable
+                sum_for_column = np.ones(dp_matrix_shape[0]) * -1.0
+                # iterate over rows
+                for k, dy in enumerate(dy_vector):
+                    y = cur_row + dy
+                    drilling_direction_cost = cost_vector[k]
+                    # sum over ensemble members
+                    for i in range(nme):
+                        # we add the expected immidiate reward and the expected long-term gain times the discount
+                        sum_for_column[y] += (weighted_images[i][y][next_column]
+                                           + dp_matrices[i][y][next_column] * discount_for_remainder)
+                if np.max(sum_for_column) > 0:
+                    best_next_index = np.argmax(sum_for_column)
+
+            next_best_position = (best_next_index, next_column)
+            # list_best_pos = [next_best_position[0]] * ne
 
         if recompute_optimal_paths_from_next:
+            if pessimistic:
+                print("Warning, recomputing of optimistic paths is irrelevant when pessimistic flag is used")
             optimal_paths_remainder = []
             for i in range(ne):
                 # todo recover this path from matrix for effciency
@@ -138,6 +158,8 @@ class pathfinder():
             dy_vector=None,
             cost_vector=None,
             cost_mult=0.02):
+        # TODO put together with the no_gan_run
+        # currently this should be considered for deprecation
         if dy_vector is None:
             dy_vector = np.array([0, -1, 1])
         if cost_vector is None:
