@@ -97,7 +97,12 @@ class pathfinder():
                                                                                   cost_vector=cost_vector)
 
             optimal_paths.append(optimal_path)
-            next_best_position = optimal_path[1] # TODO test if it is 0 or 1
+            if len(optimal_path) > 1:
+                next_best_position = optimal_path[1] # TODO test if it is 0 or 1
+            else:
+                next_column = cur_column + 1
+                best_next_index = None
+                next_best_position = (best_next_index, next_column)
         elif greedy:
             next_column = cur_column + 1
             best_next_index = None
